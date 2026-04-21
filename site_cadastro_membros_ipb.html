@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cadastro de Membros - IPB</title>
+  <style>
+    :root {
+      --gold: #d9ae2b;
+      --gold-strong: #c99600;
+      --gold-light: #f3e76b;
+      --bg: #efefef;
+      --ink: #111;
+      --muted: #cfcfcf;
+      --white: #ffffff;
+      --shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #f7f7f7 0%, #ececec 100%);
+      color: var(--ink);
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: #ffffff;
+      border-right: 1px solid #e7e7e7;
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    .sidebar h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+
+    .sidebar p {
+      margin: 0 0 20px;
+      color: #666;
+      line-height: 1.45;
+    }
+
+    .group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid #d8d8d8;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 15px;
+      outline: none;
+      background: #fff;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(217, 174, 43, 0.15);
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    button {
+      border: none;
+      border-radius: 16px;
+      padding: 14px 16px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .15s ease, opacity .15s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+
+    .primary {
+      background: linear-gradient(90deg, var(--gold-light), #ffbe00);
+      color: #111;
+    }
+
+    .secondary {
+      background: #111;
+      color: #fff;
+    }
+
+    .workspace {
+      padding: 30px;
+      overflow: auto;
+    }
+
+    .preview-wrap {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 28px;
+      align-items: start;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 430px;
+      aspect-ratio: 2 / 3.25;
+      background: var(--bg);
+      border-radius: 32px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      margin: 0 auto;
+    }
+
+    .top-slot {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 110px;
+      height: 18px;
+      border-radius: 999px;
+      background: #000;
+      z-index: 4;
+    }
+
+    .wm-front {
+      position: absolute;
+      top: 38px;
+      right: -20px;
+      width: 320px;
+      height: 320px;
+      opacity: 0.12;
+      border: 12px solid #888;
+      border-radius: 50%;
+      z-index: 0;
+    }
+
+    .wm-front::before,
+    .wm-front::after,
+    .wm-back::before,
+    .wm-back::after {
+      content: "";
+      position: absolute;
+      inset: 18%;
+      border-radius: 50%;
+      border: 8px solid rgba(201, 150, 0, 0.5);
+    }
+
+    .brand-row {
+      position: absolute;
+      top: 110px;
+      left: 28px;
+      right: 28px;
+      display: grid;
+      grid-template-columns: 118px 1fr;
+      gap: 18px;
+      align-items: center;
+      z-index: 2;
+    }
+
+    .brand-text {
+      color: var(--gold);
+      font-weight: 700;
+      font-size: 26px;
+      line-height: 1.02;
+      text-align: center;
+    }
+
+    .cnpj-front {
+      position: absolute;
+      top: 260px;
+      left: 170px;
+      font-size: 26px;
+      z-index: 2;
+    }
+
+    .photo {
+      position: absolute;
+      top: 355px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 210px;
+      height: 290px;
+      object-fit: cover;
+      background: #ddd;
+      z-index: 2;
+    }
+
+    .front-wave {
+      position: absolute;
+      left: -5%;
+      right: -5%;
+      bottom: -20px;
+      height: 360px;
+      background: linear-gradient(90deg, #efe65a 0%, #ffbf00 100%);
+      border-top-left-radius: 55% 18%;
+      border-top-right-radius: 55% 18%;
+      z-index: 1;
+    }
+
+    .front-fields {
+      position: absolute;
+      left: 48px;
+      right: 48px;
+      bottom: 68px;
+      z-index: 3;
+    }
+
+    .field-label {
+      font-size: 28px;
+      margin: 0 0 8px;
+    }
+
+    .field-box {
+      background: rgba(255,255,255,0.9);
+      padding: 14px 16px;
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 18px;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      word-break: break-word;
+    }
+
+    .logo-circle {
+      width: 118px;
+      height: 118px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #fff4c2, #c79a22 70%, #a97500 100%);
+      padding: 10px;
+      display: grid;
+      place-items: center;
+      box-shadow: inset 0 0 0 6px rgba(255,255,255,0.6);
+    }
+
+    .logo-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: white;
+      position: relative;
+      display: grid;
+      place-items: center;
+      color: #b78b17;
+      font-weight: 700;
+      font-size: 20px;
+      overflow: hidden;
+    }
+
+    .logo-inner::before {
+      content: "";
+      position: absolute;
+      top: 14px;
+      left: 16px;
+      right: 16px;
+      height: 38px;
+      background: conic-gradient(from 180deg at 50% 100%, #d9ae2b 0deg 180deg, transparent 180deg 360deg);
+      border-top-left-radius: 100px;
+      border-top-right-radius: 100px;
+    }
+
+    .logo-book {
+      position: absolute;
+      bottom: 18px;
+      width: 70px;
+      height: 28px;
+      border-bottom-left-radius: 50px 24px;
+      border-bottom-right-radius: 50px 24px;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      border: 6px solid #d9ae2b;
+      border-top: none;
+    }
+
+    .logo-text {
+      position: relative;
+      z-index: 1;
+    }
+
+    .card.back {
+      background: #efefef;
+    }
+
+    .wm-back {
+      position: absolute;
+      left: -120px;
+      bottom: -100px;
+      width: 420px;
+      height: 420px;
+      border: 14px solid rgba(201, 150, 0, 0.45);
+      border-radius: 50%;
+      opacity: 0.5;
+      z-index: 0;
+    }
+
+    .back-columns {
+      position: absolute;
+      top: 160px;
+      left: 32px;
+      right: 102px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 18px;
+      z-index: 2;
+    }
+
+    .vcol {
+      position: relative;
+      min-height: 550px;
+      background: #d7d7d7;
+      padding-top: 18px;
+    }
+
+    .vlabel {
+      position: absolute;
+      top: 18px;
+      right: -4px;
+      transform-origin: top right;
+      transform: rotate(90deg) translateY(-100%);
+      white-space: nowrap;
+      font-size: 22px;
+      font-weight: 700;
+      color: #111;
+    }
+
+    .vvalue {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      height: 100%;
+      padding: 18px 8px;
+      font-weight: 700;
+      font-size: 22px;
+      overflow: hidden;
+    }
+
+    .side-brand {
+      position: absolute;
+      top: 210px;
+      right: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      z-index: 3;
+    }
+
+    .side-text {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      color: var(--gold);
+      font-size: 26px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .side-cnpj {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      font-size: 22px;
+      color: #111;
+    }
+
+    .hint {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 16px;
+      background: #fff7dd;
+      color: #6e5600;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 980px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { border-right: none; border-bottom: 1px solid #e7e7e7; }
+    }
+
+    @media (max-width: 560px) {
+      .workspace { padding: 18px; }
+      .sidebar { padding: 18px; }
+      .brand-row {
+        grid-template-columns: 90px 1fr;
+        top: 100px;
+      }
+      .logo-circle { width: 90px; height: 90px; }
+      .brand-text { font-size: 20px; }
+      .cnpj-front { left: 126px; top: 224px; font-size: 20px; }
+      .photo { width: 170px; height: 235px; top: 320px; }
+      .field-label { font-size: 22px; }
+      .field-box { font-size: 22px; }
+      .back-columns { gap: 10px; left: 20px; right: 90px; }
+      .vlabel, .vvalue { font-size: 18px; }
+      .side-text { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <h1>Cadastro de membros</h1>
+      <p>Preencha os dados e veja a carteirinha na mesma aparência do modelo. Você pode editar tudo e depois imprimir ou adaptar do seu jeito.</p>
+
+      <div class="group">
+        <label for="igrejaNome">Nome da igreja</label>
+        <input id="igrejaNome" value="Igreja Pentecostal Betesda" />
+      </div>
+
+      <div class="group">
+        <label for="cnpj">CNPJ</label>
+        <input id="cnpj" value="00.000.000/0001-00" />
+      </div>
+
+      <div class="group">
+        <label for="nome">Nome do membro</label>
+        <input id="nome" value="Wdenison Lima Derze" />
+      </div>
+
+      <div class="group">
+        <label for="cargo">Cargo eclesiástico</label>
+        <input id="cargo" value="Presbítero" />
+      </div>
+
+      <div class="group">
+        <label for="cpf">CPF</label>
+        <input id="cpf" value="000.000.000-00" />
+      </div>
+
+      <div class="group">
+        <label for="nascimento">Data de nascimento</label>
+        <input id="nascimento" value="01/01/1990" />
+      </div>
+
+      <div class="group">
+        <label for="batismo">Batismo</label>
+        <input id="batismo" value="Sim" />
+      </div>
+
+      <div class="group">
+        <label for="membroDesde">Membro desde</label>
+        <input id="membroDesde" value="2020" />
+      </div>
+
+      <div class="group">
+        <label for="congregacao">Congregação</label>
+        <input id="congregacao" value="Sede" />
+      </div>
+
+      <div class="group">
+        <label for="foto">Foto do membro</label>
+        <input id="foto" type="file" accept="image/*" />
+      </div>
+
+      <div class="actions">
+        <button class="primary" id="printBtn">Imprimir</button>
+        <button class="secondary" id="clearBtn">Limpar</button>
+      </div>
+
+      <div class="hint">
+        Dica: se quiser trocar o logo, basta substituir a área do logo por uma imagem sua no HTML. Também dá para ligar esse formulário ao Python depois para salvar os membros em banco de dados. ✨
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <div class="preview-wrap">
+        <section class="card front">
+          <div class="top-slot"></div>
+          <div class="wm-front"></div>
+
+          <div class="brand-row">
+            <div class="logo-circle">
+              <div class="logo-inner">
+                <div class="logo-text">IPB</div>
+                <div class="logo-book"></div>
+              </div>
+            </div>
+            <div class="brand-text" id="viewIgreja">Igreja Pentecostal<br>Betesda</div>
+          </div>
+
+          <div class="cnpj-front">CNPJ: <span id="viewCnpjFront">00.000.000/0001-00</span></div>
+
+          <img class="photo" id="previewFoto" alt="Foto do membro" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='420' viewBox='0 0 300 420'><rect width='300' height='420' fill='%23d9d9d9'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='24' fill='%23666'>Foto do membro</text></svg>" />
+
+          <div class="front-wave"></div>
+
+          <div class="front-fields">
+            <div class="field-label">Nome:</div>
+            <div class="field-box" id="viewNome">Wdenison Lima Derze</div>
+
+            <div class="field-label">Cargo Eclesiástico:</div>
+            <div class="field-box" id="viewCargo">Presbítero</div>
+          </div>
+        </section>
+
+        <section class="card back">
+          <div class="top-slot"></div>
+          <div class="wm-back"></div>
+
+          <div class="back-columns">
+            <div class="vcol">
+              <div class="vlabel">Congregação:</div>
+              <div class="vvalue" id="viewCongregacao">Sede</div>
+            </div>
+            <div class="vcol">
+              <div class="vlabel">Membro desde:</div>
+              <div class="vvalue" id="viewMembroDesde">2020</div>
+            </div>
+            <div class="vcol">
+              <div class="vlabel">Batismo:</div>
+              <div class="vvalue" id="viewBatismo">Sim</div>
+            </div>
+            <div class="vcol">
+              <div class="vlabel">Data de Nascimento:</div>
+              <div class="vvalue" id="viewNascimento">01/01/1990</div>
+            </div>
+            <div class="vcol">
+              <div class="vlabel">CPF:</div>
+              <div class="vvalue" id="viewCpf">000.000.000-00</div>
+            </div>
+          </div>
+
+          <div class="side-brand">
+            <div class="logo-circle" style="width:72px;height:72px; padding:6px;">
+              <div class="logo-inner" style="font-size:14px;">
+                <div class="logo-text">IPB</div>
+                <div class="logo-book" style="width:42px;height:16px;bottom:12px;border-width:4px;"></div>
+              </div>
+            </div>
+            <div class="side-cnpj">cnpj: <span id="viewCnpjSide">00.000.000/0001-00</span></div>
+            <div class="side-text" id="viewIgrejaSide">Igreja Pentecostal Betesda</div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const igrejaNome = document.getElementById('igrejaNome');
+    const cnpj = document.getElementById('cnpj');
+    const nome = document.getElementById('nome');
+    const cargo = document.getElementById('cargo');
+    const cpf = document.getElementById('cpf');
+    const nascimento = document.getElementById('nascimento');
+    const batismo = document.getElementById('batismo');
+    const membroDesde = document.getElementById('membroDesde');
+    const congregacao = document.getElementById('congregacao');
+    const foto = document.getElementById('foto');
+
+    const viewIgreja = document.getElementById('viewIgreja');
+    const viewIgrejaSide = document.getElementById('viewIgrejaSide');
+    const viewCnpjFront = document.getElementById('viewCnpjFront');
+    const viewCnpjSide = document.getElementById('viewCnpjSide');
+    const viewNome = document.getElementById('viewNome');
+    const viewCargo = document.getElementById('viewCargo');
+    const viewCpf = document.getElementById('viewCpf');
+    const viewNascimento = document.getElementById('viewNascimento');
+    const viewBatismo = document.getElementById('viewBatismo');
+    const viewMembroDesde = document.getElementById('viewMembroDesde');
+    const viewCongregacao = document.getElementById('viewCongregacao');
+    const previewFoto = document.getElementById('previewFoto');
+
+    function quebrarNomeIgreja(texto) {
+      const palavras = texto.trim().split(/\s+/);
+      if (palavras.length <= 2) return texto;
+      const meio = Math.ceil(palavras.length / 2);
+      return palavras.slice(0, meio).join(' ') + '<br>' + palavras.slice(meio).join(' ');
+    }
+
+    function atualizar() {
+      viewIgreja.innerHTML = quebrarNomeIgreja(igrejaNome.value || 'Igreja Pentecostal Betesda');
+      viewIgrejaSide.textContent = igrejaNome.value || 'Igreja Pentecostal Betesda';
+      viewCnpjFront.textContent = cnpj.value || '00.000.000/0001-00';
+      viewCnpjSide.textContent = cnpj.value || '00.000.000/0001-00';
+      viewNome.textContent = nome.value || 'Nome do membro';
+      viewCargo.textContent = cargo.value || 'Cargo';
+      viewCpf.textContent = cpf.value || '000.000.000-00';
+      viewNascimento.textContent = nascimento.value || '00/00/0000';
+      viewBatismo.textContent = batismo.value || 'Não informado';
+      viewMembroDesde.textContent = membroDesde.value || '0000';
+      viewCongregacao.textContent = congregacao.value || 'Congregação';
+    }
+
+    [igrejaNome, cnpj, nome, cargo, cpf, nascimento, batismo, membroDesde, congregacao].forEach(el => {
+      el.addEventListener('input', atualizar);
+    });
+
+    foto.addEventListener('change', (event) => {
+      const arquivo = event.target.files?.[0];
+      if (!arquivo) return;
+      const reader = new FileReader();
+      reader.onload = e => previewFoto.src = e.target.result;
+      reader.readAsDataURL(arquivo);
+    });
+
+    document.getElementById('printBtn').addEventListener('click', () => {
+      window.print();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      nome.value = '';
+      cargo.value = '';
+      cpf.value = '';
+      nascimento.value = '';
+      batismo.value = '';
+      membroDesde.value = '';
+      congregacao.value = '';
+      atualizar();
+    });
+
+    atualizar();
+  </script>
+</body>
+</html>
